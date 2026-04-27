@@ -1,14 +1,22 @@
 import { Request, Response } from "express"
 import { pool } from "../config/db"
+import { redis } from "../config/redis"
 
 export const getDisplayContent = async (req: Request, res: Response) => {
 
-  try {
+    try {
 
-    const slotId = req.params.slotId
+        const slotId = req.params.slotId
+        const cacheKey = `display_slot_${slotId}`
 
-    const result = await pool.query(
-      `
+        const cachedData = await redis.get(cacheKey)
+        if (cachedData) {
+            console.log("Serving from Redis cache")
+
+            return res.json(JSON.parse(cachedData))
+        }
+        const result = await pool.query(
+            `
       SELECT
       c.id,
       c.title,
@@ -21,19 +29,27 @@ export const getDisplayContent = async (req: Request, res: Response) => {
       AND c.status = 'approved'
       ORDER BY cs.rotation_order ASC
       `,
-      [slotId]
-    )
+            [slotId]
+        )
 
-    res.json({
-      slot: slotId,
-      content: result.rows
-    })
+        const response = {
+            slot: slotId,
+            content: result.rows
+        }
 
-  } catch (error) {
+        await redis.set(
+            cacheKey,
+            JSON.stringify(response),
+            "EX",
+            30
+        )
+        res.json(response)
 
-    console.error(error)
-    res.status(500).json({ message: "Server error" })
+    } catch (error) {
 
-  }
+        console.error(error)
+        res.status(500).json({ message: "Server error" })
+
+    }
 
 }
