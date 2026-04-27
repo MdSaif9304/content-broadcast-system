@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import { pool } from "../config/db"
-import { redis } from "../config/redis"
+import redis from "../config/redis"
+
 
 export const getDisplayContent = async (req: Request, res: Response) => {
 
