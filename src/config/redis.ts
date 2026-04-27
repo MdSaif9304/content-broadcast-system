@@ -1,6 +1,12 @@
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_PUBLIC_URL as string);
+const redisUrl = process.env.REDIS_PUBLIC_URL;
+
+if (!redisUrl) {
+  throw new Error("REDIS_PUBLIC_URL is missing in environment");
+}
+
+const redis = new Redis(redisUrl);
 
 redis.on("connect", () => {
   console.log("Redis connected");
