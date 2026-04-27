@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "start": "node dist/server.js",
+     "build": "tsc -b",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
     "migrate:create": "node-pg-migrate create",
     "migrate:up": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down"
